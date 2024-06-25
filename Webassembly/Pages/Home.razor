@@ -1,0 +1,212 @@
+﻿@page "/Home"
+@using ApplicationLayer.DTDs
+@using ApplicationLayer.Context
+@using ApplicationLayer.Services
+@using DomainLayer.Entities
+@using NetcodeHub.Packages.Components.Validations.OnInput
+@using NetcodeHub.Packages.Components.Toast
+@using NetcodeHub.Packages.Components.Modal
+@inject IEmployeeService emp
+@inject ToastService toastService
+
+<style>
+    body {
+        background-color: #f8f9fa;
+        font-family: Arial, sans-serif;
+    }
+
+    h1 {
+        color: #343a40;
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .table {
+        width: 100%;
+        margin-top: 20px;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+        .table th, .table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .table th {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+    .toast-success {
+        background-color: #28a745 !important;
+        color: #fff !important;
+    }
+
+    .toast-error {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+    }
+
+    .toast {
+        border-radius: 5px;
+        padding: 10px;
+        margin: 10px;
+        font-size: 14px;
+    }
+
+    .modal-dialog {
+        border: 1px solid #dc3545;
+        border-radius: 5px;
+        padding: 20px;
+        background-color: #fff;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1>Employee Management System</h1>
+    <div class="row">
+        <div class="col-lg-6">
+            <EditForm Model="employee" OnValidSubmit="Save">
+                <DataAnnotationsValidator />
+                <FloatingText @bind-Value="employee.Name"
+                              Label="Employee Fullname"
+                              Placeholder="John Doe"
+                              class="form-control mb-3" />
+                <ValidationMessage For="() => employee.Name" />
+                <FloatingTextArea @bind-Value="employee.Address"
+                                  Label="Employee Address"
+                                  Placeholder="e.g., Accra, Ghana - West Africa"
+                                  class="form-control mb-3" />
+                <ValidationMessage For="() => employee.Address" />
+                <button class="btn btn-primary mt-3 mb-3" type="submit">Save</button>
+            </EditForm>
+        </div>
+        <div class="col-lg-6">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NAME</th>
+                        <th>ADDRESS</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Employees is not null)
+                    {
+                        foreach (var item in Employees)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.Name</td>
+                                <td>@item.Address</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm" @onclick="() => EditClicked(item)">Edit</button>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => DeleteClicked(item.Id)">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<Confirmation @ref="confirmation"
+              Instruction="@Instruction"
+              Action="Handle"
+              BoostrapClass="border-danger"
+              CustomStyle="width:300px;" />
+
+<Toast Duration="@duration" Persist="false" IconClass="bi bi-check" @ref="toastService.ToastComponent" />
+
+@code {
+    Confirmation? confirmation;
+    string Instruction = "Are you sure you want to do this?";
+    int duration = 4000;
+    Employee employee = new();
+
+   async Task Save()
+    {
+        var response = new ServiceResponce(false, null!);
+        if (employee.Id > 0)
+            response = await emp.UpdateAsync(employee);
+        else
+            response = await emp.AddAsync(employee);
+
+        if (!response.Flag)
+        {
+            duration = 5000;
+            toastService.ShowErrorToast("Alert", response.Message);
+            return;
+        }
+        toastService.ShowSuccessToast("Success", response.Message);
+        await GetData();
+    }
+
+    List<Employee> Employees = new();
+    protected override async Task OnInitializedAsync() => await GetData();
+    private async Task GetData() => Employees = await emp.GetAsync();
+
+    async void EditClicked(Employee incomEmp) => employee = incomEmp;
+
+    async void DeleteClicked(int id)
+    {
+
+
+        var (flag, message) = await emp.DeleteAsync(id);
+        await GetData();
+        StateHasChanged();
+        DeleteId = id;
+        await confirmation!.Show();
+    }
+
+
+    public int DeleteId { get; set; }
+    async Task Handle()
+    {
+        if (DeleteId == 0) return;
+        var (flag, message) = await emp.DeleteAsync(DeleteId);
+        await GetData();
+        DeleteId = 0;
+        StateHasChanged();
+    }
+}
