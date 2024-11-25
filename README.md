@@ -49,10 +49,10 @@ cd secure-data-exchange
      ```
      dotnet run
      ```
-   - The API and Swagger documentation should now be accessible at `https://localhost:5001/swagger` or `http://localhost:5000/swagger`.
+   - The API and Swagger documentation should now be accessible at `https://localhost:7260/swagger` or `http://localhost:7260/swagger`.
 
  5. Test API Endpoints with Swagger
-   - Open your browser and navigate to `https://localhost:5001/swagger` or `http://localhost:5000/swagger`.
+   - Open your browser and navigate to `https://localhost:7260/swagger` or `http://localhost:7260/swagger`.
    - Swagger provides a UI to test all available endpoints:
      - **Registration**: `POST /api/auth/register`
      - **Login**: `POST /api/auth/login`
