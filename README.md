@@ -109,6 +109,12 @@ Technologies Used
 - Blazor WebAssembly
 
 
+
+![HOME PAGE](https://github.com/user-attachments/assets/93061838-d736-4fcf-bebd-c8a88ed2df41)
+![LOGIN PAGE](https://github.com/user-attachments/assets/af099f24-9bae-4861-80ec-7d8a62a786b0)
+![SWAGGER](https://github.com/user-attachments/assets/0a55aec7-66a4-4cc1-8d5e-b9490b5cbf68)
+
+
 Contact
 
 For any questions or suggestions, feel free to contact me at **subalakshmi74soft@gmail.com**.
